@@ -56,6 +56,17 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClCompile Include="..\..\..\tools\CpuTrace\CpuTrace.cpp" />
+    <ClCompile Include="..\..\..\tools\CpuTrace\murmur3.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev+|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Fastbuild|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev+|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Fastbuild|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\addons\slot1comp_mc.cpp" />
     <ClCompile Include="..\addons\slot1comp_protocol.cpp" />
     <ClCompile Include="..\addons\slot1comp_rom.cpp" />
@@ -342,6 +353,9 @@
     <ClCompile Include="tileView.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\tools\CpuTrace\CpuTrace.h" />
+    <ClInclude Include="..\..\..\tools\CpuTrace\CpuTraceArm.h" />
+    <ClInclude Include="..\..\..\tools\CpuTrace\murmur3.h" />
     <ClInclude Include="..\addons\slot1comp_mc.h" />
     <ClInclude Include="..\addons\slot1comp_protocol.h" />
     <ClInclude Include="..\addons\slot1comp_rom.h" />
