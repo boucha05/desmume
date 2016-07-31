@@ -977,7 +977,12 @@
     <ClCompile Include="..\..\..\tools\CpuTrace\murmur3.c">
       <Filter>CpuTrace</Filter>
     </ClCompile>
-    <ClCompile Include="..\utils\colorspacehandler\colorspacehandler.cpp">
+    <ClCompile Include="..\..\..\tools\CpuTrace\CpuTraceArm.cpp">
+      <Filter>CpuTrace</Filter>
+    </ClCompile>
+    <ClCompile Include="..\arm_capture.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>    <ClCompile Include="..\utils\colorspacehandler\colorspacehandler.cpp">
       <Filter>Core\utils\colorspacehandler</Filter>
     </ClCompile>
     <ClCompile Include="..\utils\colorspacehandler\colorspacehandler_SSE2.cpp">
@@ -1767,6 +1772,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\tools\CpuTrace\murmur3.h">
       <Filter>CpuTrace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\arm_capture.h">
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="..\utils\colorspacehandler\colorspacehandler.h">
       <Filter>Core\utils\colorspacehandler</Filter>

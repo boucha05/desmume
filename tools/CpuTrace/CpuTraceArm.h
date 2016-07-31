@@ -14,6 +14,7 @@ namespace CpuTrace
             {
                 IRQ,
                 FIQ,
+                COUNT
             };
         }
 
@@ -22,6 +23,7 @@ namespace CpuTrace
             enum
             {
                 Unhalted,
+                COUNT
             };
         }
 
@@ -29,11 +31,13 @@ namespace CpuTrace
         {
             enum
             {
+                Unknown,
                 Code,
                 Data,
                 GPU,
                 DMA,
                 Debug,
+                COUNT
             };
         }
 
@@ -43,7 +47,7 @@ namespace CpuTrace
             {
                 uint32_t    r[16];
                 uint32_t    cpsr;
-            }               user;
+            }               usr;
             struct
             {
                 uint32_t    r8;
@@ -80,5 +84,16 @@ namespace CpuTrace
                 uint32_t    spsr;
             }               und;
         };
+
+        struct ICaptureHandler
+        {
+        public:
+            virtual void start(ICapture& capture) = 0;
+            virtual void stop(ICapture& capture) = 0;
+            virtual void getState(State& state) = 0;
+        };
+
+        ICaptureDevice& createCaptureDevice(const char* name, ICaptureHandler& handler);
+        void destroyCaptureDevice(ICaptureDevice& device);
     }
 }

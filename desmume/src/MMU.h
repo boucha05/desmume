@@ -29,6 +29,7 @@
 #include "lua-engine.h"
 #endif
 
+#include "arm_capture.h"
 #ifdef HAVE_JIT
 #include "arm_jit.h"
 #endif
@@ -978,23 +979,84 @@ FORCEINLINE void _MMU_write32(const int PROCNUM, const MMU_ACCESS_TYPE AT, const
 	#define WRITE8(a,b,c)	_MMU_write08<PROCNUM>(b, c)
 #endif
 
-template<int PROCNUM, MMU_ACCESS_TYPE AT>
-FORCEINLINE u8 _MMU_read08(u32 addr) { return _MMU_read08(PROCNUM, AT, addr); }
+#if defined(ARM_TRACE)
+template <MMU_ACCESS_TYPE AT>
+uint32_t getMemoryAccessType()
+{
+    switch (AT)
+    {
+    case MMU_AT_CODE: return CpuTrace::ARM::MemoryAccess::Code;
+    case MMU_AT_DATA: return CpuTrace::ARM::MemoryAccess::Data;
+    case MMU_AT_GPU: return CpuTrace::ARM::MemoryAccess::GPU;
+    case MMU_AT_DMA: return CpuTrace::ARM::MemoryAccess::DMA;
+    case MMU_AT_DEBUG: return CpuTrace::ARM::MemoryAccess::Debug;
+    default: return CpuTrace::ARM::MemoryAccess::Unknown;
+    }
+}
+#endif
 
 template<int PROCNUM, MMU_ACCESS_TYPE AT>
-FORCEINLINE u16 _MMU_read16(u32 addr) { return _MMU_read16(PROCNUM, AT, addr); }
+FORCEINLINE u8 _MMU_read08(u32 addr)
+{
+    u8 val = _MMU_read08(PROCNUM, AT, addr);
+#if defined(ARM_TRACE)
+    if (ARMCAPTURE)
+        ARMCAPTURE->read8(addr, val, getMemoryAccessType<AT>());
+#endif
+    return val;
+}
 
 template<int PROCNUM, MMU_ACCESS_TYPE AT>
-FORCEINLINE u32 _MMU_read32(u32 addr) { return _MMU_read32(PROCNUM, AT, addr); }
+FORCEINLINE u16 _MMU_read16(u32 addr)
+{
+    u16 val = _MMU_read16(PROCNUM, AT, addr);
+#if defined(ARM_TRACE)
+    if (ARMCAPTURE)
+        ARMCAPTURE->read16(addr, val, getMemoryAccessType<AT>());
+#endif
+    return val;
+}
 
 template<int PROCNUM, MMU_ACCESS_TYPE AT>
-FORCEINLINE void _MMU_write08(u32 addr, u8 val) { _MMU_write08(PROCNUM, AT, addr, val); }
+FORCEINLINE u32 _MMU_read32(u32 addr)
+{
+    u32 val = _MMU_read32(PROCNUM, AT, addr);
+#if defined(ARM_TRACE)
+    if (ARMCAPTURE)
+        ARMCAPTURE->read32(addr, val, getMemoryAccessType<AT>());
+#endif
+    return val;
+}
 
 template<int PROCNUM, MMU_ACCESS_TYPE AT>
-FORCEINLINE void _MMU_write16(u32 addr, u16 val) { _MMU_write16(PROCNUM, AT, addr, val); }
+FORCEINLINE void _MMU_write08(u32 addr, u8 val)
+{
+#if defined(ARM_TRACE)
+    if (ARMCAPTURE)
+        ARMCAPTURE->write8(addr, val, getMemoryAccessType<AT>());
+#endif
+    _MMU_write08(PROCNUM, AT, addr, val);
+}
 
 template<int PROCNUM, MMU_ACCESS_TYPE AT>
-FORCEINLINE void _MMU_write32(u32 addr, u32 val) { _MMU_write32(PROCNUM, AT, addr, val); }
+FORCEINLINE void _MMU_write16(u32 addr, u16 val)
+{
+#if defined(ARM_TRACE)
+    if (ARMCAPTURE)
+        ARMCAPTURE->write16(addr, val, getMemoryAccessType<AT>());
+#endif
+    _MMU_write16(PROCNUM, AT, addr, val);
+}
+
+template<int PROCNUM, MMU_ACCESS_TYPE AT>
+FORCEINLINE void _MMU_write32(u32 addr, u32 val)
+{
+#if defined(ARM_TRACE)
+    if (ARMCAPTURE)
+        ARMCAPTURE->write32(addr, val, getMemoryAccessType<AT>());
+#endif
+    _MMU_write32(PROCNUM, AT, addr, val);
+}
 
 void FASTCALL MMU_DumpMemBlock(u8 proc, u32 address, u32 size, u8 *buffer);
 

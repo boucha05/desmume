@@ -30,6 +30,7 @@
 #include "utils/task.h"
 
 #include "common.h"
+#include "arm_capture.h"
 #include "armcpu.h"
 #include "render3D.h"
 #include "MMU.h"
@@ -96,6 +97,17 @@ int lastLag;
 int TotalLagFrames;
 
 TSCalInfo TSCal;
+
+namespace
+{
+    bool cpuCaptureRunning = false;
+
+#if defined(ARM_TRACE)
+    CpuTrace::IContext* cpuCaptureContext = nullptr;
+    CpuTrace::ICapture* cpuCapture[2] = { nullptr, nullptr };
+#endif
+}
+
 
 namespace DLDI
 {
@@ -167,6 +179,12 @@ int NDS_Init()
 	NDS_ARM7.SetBaseMemoryInterface(&arm7_base_memory_iface);
 	NDS_ARM7.SetBaseMemoryInterfaceData(NULL);
 	NDS_ARM7.ResetMemoryInterfaceToBase();
+
+#if defined(ARM_TRACE)
+    cpuCaptureContext = &CpuTrace::createContext();
+    arm_capture_create(0);
+    arm_capture_create(1);
+#endif
 	
 	if (GPU != NULL)
 	{
@@ -205,6 +223,13 @@ void NDS_DeInit(void)
 
 #ifdef HAVE_JIT
 	arm_jit_close();
+#endif
+
+#if defined(ARM_TRACE)
+    arm_capture_destroy(0);
+    arm_capture_destroy(1);
+    CpuTrace::destroyContext(*cpuCaptureContext);
+    cpuCaptureContext = nullptr;
 #endif
 
 #ifdef LOG_ARM7
@@ -1913,6 +1938,35 @@ void NDS_debug_step()
 	singleStep = true;
 }
 
+void NDS_CPUCaptureStart()
+{
+    cpuCaptureRunning = true;
+#if defined(ARM_TRACE)
+    if (cpuCaptureContext && NDS_CaptureDevice_ARM[ARMCPU_ARM7] && NDS_CaptureDevice_ARM[ARMCPU_ARM9])
+    {
+        cpuCapture[ARMCPU_ARM7] = &cpuCaptureContext->startCapture(*NDS_CaptureDevice_ARM[ARMCPU_ARM7], "D:\\CaptureARM7.trace");
+        cpuCapture[ARMCPU_ARM9] = &cpuCaptureContext->startCapture(*NDS_CaptureDevice_ARM[ARMCPU_ARM9], "D:\\CaptureARM9.trace");
+    }
+#endif
+}
+
+void NDS_CPUCaptureStop()
+{
+#if defined(ARM_TRACE)
+    if (cpuCaptureRunning && cpuCaptureContext && NDS_CaptureDevice_ARM[ARMCPU_ARM7] && NDS_CaptureDevice_ARM[ARMCPU_ARM9])
+    {
+        cpuCaptureContext->stopCapture(*cpuCapture[ARMCPU_ARM7]);
+        cpuCaptureContext->stopCapture(*cpuCapture[ARMCPU_ARM9]);
+    }
+#endif
+    cpuCaptureRunning = false;
+}
+
+bool NDS_CPUCaptureIsRunning()
+{
+    return cpuCaptureRunning;
+}
+
 template<bool FORCE>
 void NDS_exec(s32 nb)
 {
@@ -2062,6 +2116,8 @@ void NDS_exec(s32 nb)
         #ifdef GDB_STUB
         gdbstub_mutex_unlock();
         #endif
+
+    NDS_CPUCaptureStop();
 }
 
 template<int PROCNUM> static void execHardware_interrupts_core()
@@ -2073,6 +2129,10 @@ template<int PROCNUM> static void execHardware_interrupts_core()
 	{
 		ARMPROC.halt_IE_and_IF = FALSE;
 		ARMPROC.waitIRQ = FALSE;
+#if defined(ARM_TRACE)
+        if (ARMCAPTURE)
+            ARMCAPTURE->signal(CpuTrace::ARM::Signal::Unhalted);
+#endif
 	}
 
 	if(masked && MMU.reg_IME[PROCNUM] && !ARMPROC.CPSR.bits.I)
@@ -2505,6 +2565,9 @@ bool _HACK_DONT_STOPMOVIE = false;
 void NDS_Reset()
 {
 	PrepareLogfiles();
+
+    NDS_CPUCaptureStop();
+    NDS_CPUCaptureStart();
 
 	if(movieMode != MOVIEMODE_INACTIVE && !_HACK_DONT_STOPMOVIE)
 		movie_reset_command = true;

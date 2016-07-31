@@ -71,6 +71,8 @@ namespace
         {
             mTrace.getBuffer().reserve(1024 * 1024);
 
+            mDevice.startCapture(*this);
+
             emit(Command::Header, Magic, CpuTrace::Version, device.getVersion(), device.getStateSize());
 
             mState.resize(mDevice.getStateSize(), 0);
@@ -79,6 +81,16 @@ namespace
         ~Capture()
         {
             emit(Command::Footer);
+
+            mDevice.stopCapture(*this);
+
+            FILE* file = fopen(mPath.c_str(), "wb");
+            if (file)
+            {
+                const auto& buffer = mTrace.getBuffer();
+                fwrite(buffer.data(), sizeof(uint32_t), buffer.size(), file);
+                fclose(file);
+            }
         }
 
         virtual void invalidateState() override

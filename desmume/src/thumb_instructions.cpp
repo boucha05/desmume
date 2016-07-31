@@ -17,6 +17,7 @@
 	along with the this software.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "arm_capture.h"
 #include "armcpu.h"
 #include "instructions.h"
 
@@ -1035,6 +1036,10 @@ TEMPLATE static  u32 FASTCALL OP_SWI_THUMB(const u32 i)
 		//zero 30-jun-2009 - but they say that the ideas 0xFF should crash the device...
 		//u32 swinum = cpu->instruction & 0xFF;
 		swinum &= 0x1F;
+#if defined(ARM_TRACE)
+        if (ARMCAPTURE)
+            ARMCAPTURE->invalidateState();
+#endif
 		return cpu->swi_tab[swinum]() + 3;  
 	}
 	else {

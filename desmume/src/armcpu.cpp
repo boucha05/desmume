@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <algorithm>
 
+#include "arm_capture.h"
 #include "armcpu.h"
 #include "common.h"
 #include "instructions.h"
@@ -267,7 +268,7 @@ void armcpu_init(armcpu_t *armcpu, u32 adr)
 	//do something sensible when booting up to a thumb address
 	armcpu->next_instruction = adr & ~1;
 	armcpu->CPSR.bits.T = BIT0(adr);
-	
+
 //#ifndef GDB_STUB
 	armcpu_prefetch(armcpu);
 //#endif
@@ -392,6 +393,11 @@ u32 armcpu_Wait4IRQ(armcpu_t *cpu)
 template<u32 PROCNUM>
 FORCEINLINE static u32 armcpu_prefetch()
 {
+#if defined(ARM_TRACE)
+    if (ARMCAPTURE)
+        ARMCAPTURE->execute();
+#endif
+
 	armcpu_t* const armcpu = &ARMPROC;
 //#ifdef GDB_STUB
 //	u32 temp_instruction;
@@ -531,7 +537,12 @@ BOOL armcpu_irqException(armcpu_t *armcpu)
 //#ifdef GDB_STUB
 //	armcpu->irq_flag = 0;
 //#endif
-      
+
+#if defined(ARM_TRACE)
+    if (NDS_Capture_ARM[armcpu->proc_ID])
+        NDS_Capture_ARM[armcpu->proc_ID]->interrupt(CpuTrace::ARM::Interrupt::IRQ);
+#endif
+
 	tmp = armcpu->CPSR;
 	armcpu_switchMode(armcpu, IRQ);
 
@@ -667,6 +678,11 @@ u32 armcpu_exec()
 	//cFetch = armcpu_prefetch(&ARMPROC);
 
 	//printf("%d: %08X\n",PROCNUM,ARMPROC.instruct_adr);
+
+#if defined(ARM_TRACE)
+    if (ARMCAPTURE)
+        ARMCAPTURE->invalidateState();
+#endif
 
 	if(ARMPROC.CPSR.bits.T == 0)
 	{

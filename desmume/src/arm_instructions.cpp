@@ -30,6 +30,7 @@
 #include "cp15.h"
 #include "debug.h"
 #include "MMU.h"
+#include "arm_capture.h"
 #include "armcpu.h"
 #include "NDSSystem.h"
 #include "MMU_timing.h"
@@ -6198,6 +6199,10 @@ TEMPLATE static u32 FASTCALL  OP_SWI(const u32 i)
 	if(cpu->swi_tab && !bypassBuiltinSWI)
 	{
 		swinum &= 0x1F;
+#if defined(ARM_TRACE)
+        if (ARMCAPTURE)
+            ARMCAPTURE->invalidateState();
+#endif
 		return cpu->swi_tab[swinum]() + 3;
 	} 
 	else 
