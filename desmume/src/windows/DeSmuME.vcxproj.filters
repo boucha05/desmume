@@ -971,18 +971,16 @@
     <ClCompile Include="..\libretro-common\file\archive_file_zlib.c">
       <Filter>Core\libretro-common\file</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\tools\CpuTrace\CpuTrace.cpp">
-      <Filter>CpuTrace</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\CpuTrace\murmur3.c">
-      <Filter>CpuTrace</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\tools\CpuTrace\CpuTraceArm.cpp">
-      <Filter>CpuTrace</Filter>
-    </ClCompile>
     <ClCompile Include="..\arm_capture.cpp">
       <Filter>Core</Filter>
-    </ClCompile>    <ClCompile Include="..\utils\colorspacehandler\colorspacehandler.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\..\tools\CpuTrace\src\CpuTrace.cpp">
+      <Filter>CpuTrace</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tools\CpuTrace\src\CpuTraceArm.cpp">
+      <Filter>CpuTrace</Filter>
+    </ClCompile>
+    <ClCompile Include="..\utils\colorspacehandler\colorspacehandler.cpp">
       <Filter>Core\utils\colorspacehandler</Filter>
     </ClCompile>
     <ClCompile Include="..\utils\colorspacehandler\colorspacehandler_SSE2.cpp">
@@ -1764,17 +1762,14 @@
     <ClInclude Include="..\libretro-common\include\compat\msvc.h">
       <Filter>Core\libretro-common\include\compat</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\tools\CpuTrace\CpuTrace.h">
-      <Filter>CpuTrace</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\CpuTrace\CpuTraceArm.h">
-      <Filter>CpuTrace</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\tools\CpuTrace\murmur3.h">
-      <Filter>CpuTrace</Filter>
-    </ClInclude>
     <ClInclude Include="..\arm_capture.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\tools\CpuTrace\src\CpuTrace.h">
+      <Filter>CpuTrace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\tools\CpuTrace\src\CpuTraceArm.h">
+      <Filter>CpuTrace</Filter>
     </ClInclude>
     <ClInclude Include="..\utils\colorspacehandler\colorspacehandler.h">
       <Filter>Core\utils\colorspacehandler</Filter>

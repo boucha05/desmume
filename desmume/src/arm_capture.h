@@ -21,7 +21,7 @@
 
 #if defined(ARM_TRACE)
 
-#include "../../tools/CpuTrace/CpuTraceArm.h"
+#include "../../tools/CpuTrace/src/CpuTraceArm.h"
 
 #include "types.h"
 #include "bits.h"
