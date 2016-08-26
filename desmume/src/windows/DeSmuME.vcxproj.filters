@@ -1771,6 +1771,12 @@
     <ClInclude Include="..\..\..\tools\CpuTrace\src\CpuTraceArm.h">
       <Filter>CpuTrace</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\tools\CpuTrace\src\FileStream.h">
+      <Filter>CpuTrace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\tools\CpuTrace\src\Serializer.h">
+      <Filter>CpuTrace</Filter>
+    </ClInclude>
     <ClInclude Include="..\utils\colorspacehandler\colorspacehandler.h">
       <Filter>Core\utils\colorspacehandler</Filter>
     </ClInclude>

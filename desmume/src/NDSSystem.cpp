@@ -104,6 +104,7 @@ namespace
 
 #if defined(ARM_TRACE)
     CpuTrace::IContext* cpuCaptureContext = nullptr;
+    CpuTrace::ITrace* cpuTrace[2] = { nullptr, nullptr };
     CpuTrace::ICapture* cpuCapture[2] = { nullptr, nullptr };
 #endif
 }
@@ -1938,14 +1939,31 @@ void NDS_debug_step()
 	singleStep = true;
 }
 
+namespace
+{
+    void CPUCaptureStart(uint32_t index)
+    {
+        cpuTrace[index] = &cpuCaptureContext->createTrace();
+        cpuCapture[index] = &cpuCaptureContext->startCapture(*NDS_CaptureDevice_ARM[index], *cpuTrace[index]);
+    }
+
+    void CPUCaptureStop(uint32_t index, const char* path)
+    {
+        cpuCaptureContext->stopCapture(*cpuCapture[index]);
+        auto stream = CpuTrace::FileStream(path, "wb");
+        cpuCaptureContext->saveTrace(*cpuTrace[index], stream);
+        cpuCaptureContext->destroyTrace(*cpuTrace[index]);
+    }
+}
+
 void NDS_CPUCaptureStart()
 {
     cpuCaptureRunning = true;
 #if defined(ARM_TRACE)
     if (cpuCaptureContext && NDS_CaptureDevice_ARM[ARMCPU_ARM7] && NDS_CaptureDevice_ARM[ARMCPU_ARM9])
     {
-        cpuCapture[ARMCPU_ARM7] = &cpuCaptureContext->startCapture(*NDS_CaptureDevice_ARM[ARMCPU_ARM7], "D:\\CaptureARM7.trace");
-        cpuCapture[ARMCPU_ARM9] = &cpuCaptureContext->startCapture(*NDS_CaptureDevice_ARM[ARMCPU_ARM9], "D:\\CaptureARM9.trace");
+        CPUCaptureStart(ARMCPU_ARM7);
+        CPUCaptureStart(ARMCPU_ARM9);
     }
 #endif
 }
@@ -1955,8 +1973,8 @@ void NDS_CPUCaptureStop()
 #if defined(ARM_TRACE)
     if (cpuCaptureRunning && cpuCaptureContext && NDS_CaptureDevice_ARM[ARMCPU_ARM7] && NDS_CaptureDevice_ARM[ARMCPU_ARM9])
     {
-        cpuCaptureContext->stopCapture(*cpuCapture[ARMCPU_ARM7]);
-        cpuCaptureContext->stopCapture(*cpuCapture[ARMCPU_ARM9]);
+        CPUCaptureStop(ARMCPU_ARM7, "C:\\emu\\NintendoDS\\Captures\\CaptureARM7.trace");
+        CPUCaptureStop(ARMCPU_ARM9, "C:\\emu\\NintendoDS\\Captures\\CaptureARM9.trace");
     }
 #endif
     cpuCaptureRunning = false;

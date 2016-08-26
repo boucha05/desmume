@@ -387,6 +387,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\tools\CpuTrace\src\CpuTrace.h" />
     <ClInclude Include="..\..\..\tools\CpuTrace\src\CpuTraceArm.h" />
+    <ClInclude Include="..\..\..\tools\CpuTrace\src\FileStream.h" />
+    <ClInclude Include="..\..\..\tools\CpuTrace\src\Serializer.h" />
     <ClInclude Include="..\addons\slot1comp_mc.h" />
     <ClInclude Include="..\addons\slot1comp_protocol.h" />
     <ClInclude Include="..\addons\slot1comp_rom.h" />
