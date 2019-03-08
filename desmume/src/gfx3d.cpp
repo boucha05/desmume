@@ -2107,11 +2107,23 @@ static void log3D(u8 cmd, u32 param)
 }
 #endif
 
+std::vector<uint8_t> fifoCmd;
+std::vector<uint32_t> fifoParam;
+std::string fifoPath = "C:\\Prog\\Emu\\DeSmuME_RenderPlugin\\fifo.bin";
+bool captureFifo = false;
+bool capturingFifo = false;
+
 static void gfx3d_execute(u8 cmd, u32 param)
 {
 #ifdef _3D_LOG_EXEC
 	log3D(cmd, param);
 #endif
+
+	if (capturingFifo)
+	{
+		fifoCmd.push_back(cmd);
+		fifoParam.push_back(param);
+	}
 
 	switch (cmd)
 	{
@@ -2213,6 +2225,23 @@ static void gfx3d_execute(u8 cmd, u32 param)
 		break;
 		case 0x50:		// SWAP_BUFFERS - Swap Rendering Engine Buffer (W)
 			gfx3d_glFlush(param);
+			if (capturingFifo)
+			{
+				// Save
+				capturingFifo = false;
+				auto file = fopen(fifoPath.c_str(), "wb");
+				fwrite(fifoCmd.data(), sizeof(uint8_t), fifoCmd.size(), file);
+				fwrite(fifoParam.data(), sizeof(uint32_t), fifoParam.size(), file);
+				fclose(file);
+			}
+			if (captureFifo)
+			{
+				// Start capture
+				captureFifo = false;
+				capturingFifo = true;
+				fifoCmd.clear();
+				fifoParam.clear();
+			}
 		break;
 		case 0x60:		// VIEWPORT - Set Viewport (W)
 			gfx3d_glViewPort(param);
