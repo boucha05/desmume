@@ -2107,11 +2107,28 @@ static void log3D(u8 cmd, u32 param)
 }
 #endif
 
-std::vector<uint8_t> fifoCmd;
-std::vector<uint32_t> fifoParam;
-std::string fifoPath = "C:\\Prog\\Emu\\DeSmuME_RenderPlugin\\fifo.bin";
-bool captureFifo = false;
-bool capturingFifo = false;
+struct CaptureData
+{
+	std::vector<uint8_t> fifoCmd;
+	std::vector<uint32_t> fifoParam;
+	std::vector<uint8_t> textureMemory;
+	std::vector<uint8_t> paletteMemory;
+
+	void write(const char* path)
+	{
+		auto file = fopen(path, "wb");
+		fwrite(textureMemory.data(), sizeof(uint8_t), textureMemory.size(), file);
+		fwrite(paletteMemory.data(), sizeof(uint8_t), paletteMemory.size(), file);
+		fwrite(fifoCmd.data(), sizeof(uint8_t), fifoCmd.size(), file);
+		fwrite(fifoParam.data(), sizeof(uint32_t), fifoParam.size(), file);
+		fclose(file);
+	}
+};
+
+CaptureData captureData;
+std::string capturePath = "C:\\Prog\\Emu\\DeSmuME_RenderPlugin\\Capture.bin";
+bool captureTriggered = false;
+bool captureActive = false;
 
 static void gfx3d_execute(u8 cmd, u32 param)
 {
@@ -2119,10 +2136,10 @@ static void gfx3d_execute(u8 cmd, u32 param)
 	log3D(cmd, param);
 #endif
 
-	if (capturingFifo)
+	if (captureActive)
 	{
-		fifoCmd.push_back(cmd);
-		fifoParam.push_back(param);
+		captureData.fifoCmd.push_back(cmd);
+		captureData.fifoParam.push_back(param);
 	}
 
 	switch (cmd)
@@ -2225,22 +2242,36 @@ static void gfx3d_execute(u8 cmd, u32 param)
 		break;
 		case 0x50:		// SWAP_BUFFERS - Swap Rendering Engine Buffer (W)
 			gfx3d_glFlush(param);
-			if (capturingFifo)
+			if (captureActive)
 			{
-				// Save
-				capturingFifo = false;
-				auto file = fopen(fifoPath.c_str(), "wb");
-				fwrite(fifoCmd.data(), sizeof(uint8_t), fifoCmd.size(), file);
-				fwrite(fifoParam.data(), sizeof(uint32_t), fifoParam.size(), file);
-				fclose(file);
+				// Capture memory
+				captureData.textureMemory.resize(0x80000, 0);
+				for (uint32_t slot = 0; slot < 4; ++slot)
+				{
+					auto ptr = MMU.texInfo.textureSlotAddr[slot];
+					if (ptr != MMU.blank_memory)
+						memcpy(&captureData.textureMemory[slot * 0x20000], ptr, 0x20000);
+				}
+				captureData.paletteMemory.resize(0x18000, 0);
+				for (uint32_t slot = 0; slot < 6; ++slot)
+				{
+					auto ptr = MMU.texInfo.texPalSlot[slot];
+					if (ptr != MMU.blank_memory)
+						memcpy(&captureData.paletteMemory[slot * 0x4000], ptr, 0x4000);
+				}
+
+				// Save file
+				captureData.write(capturePath.c_str());
+
+				// Stop capture
+				captureActive = false;
 			}
-			if (captureFifo)
+			if (captureTriggered)
 			{
 				// Start capture
-				captureFifo = false;
-				capturingFifo = true;
-				fifoCmd.clear();
-				fifoParam.clear();
+				captureTriggered = false;
+				captureActive = true;
+				captureData = {};
 			}
 		break;
 		case 0x60:		// VIEWPORT - Set Viewport (W)
